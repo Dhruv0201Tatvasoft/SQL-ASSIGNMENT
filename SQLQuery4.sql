@@ -123,9 +123,10 @@ tblCustomer.customer_id = tblOrder.customer_id
 inner join tblSalesman on 
 tblCustomer.salesman_id = tblSalesman.salesman_id
 
+
 --8. write a SQL query to display the customer name, customer city, grade, salesman,
 --salesman city. The results should be sorted by ascending customer_id.
-select tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblSalesman.name,tblSalesman.city 
+select tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblSalesman.name,tblSalesman.city ,tblCustomer.customer_id
 from tblCustomer inner join
 tblSalesman on
 tblCustomer.salesman_id =tblSalesman.salesman_id order by tblCustomer.customer_id
@@ -156,6 +157,7 @@ tblCustomer.customer_id = tblOrder.customer_id
 left join tblSalesman on 
 tblSalesman.salesman_id =tblCustomer.salesman_id
 
+
 --12. Write a SQL statement to generate a list in ascending order of salespersons who
 --work either for one or more customers or have not yet joined any of the customers
 select tblSalesman.salesman_id,name as salesman_name,commission,customer_id,customer_name,tblCustomer.city
@@ -167,7 +169,7 @@ order by tblSalesman.name
 
 --13. write a SQL query to list all salespersons along with customer name, city, grade,
 --order number, date, and amount.
-select tblSalesman.name ,tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblOrder.order_no
+select tblSalesman.name ,tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblOrder.order_no,tblOrder.order_no,tblOrder.purchase_amount
 from tblSalesman left join tblCustomer 
 on tblSalesman.salesman_id = tblCustomer.salesman_id 
 left join  tblOrder 
@@ -219,7 +221,7 @@ select * from tblCustomer cross join tblSalesman where tblSalesman.city is not n
 --customer i.e. each salesman will appear for all customers and vice versa for those
 --salesmen who must belong to a city which is not the same as his customer and the
 --customers should have their own grade
-select * from tblCustomer cross join tblSalesman where tblSalesman.city<>tblCustomer.city and tblCustomer.grade is not null]
+select * from tblCustomer cross join tblSalesman where tblSalesman.city<>tblCustomer.city and tblCustomer.grade is not null
 
 
 
@@ -272,14 +274,14 @@ VALUES
 select department.dept_name,max(salary) as maximum_salary_in_dept 
 from department inner join employee 
 on department.dept_id = employee.dept_id 
-group by dept_name
+group by dept_name order by maximum_salary_in_dept desc
 
 
 --2. write a SQL query to find Departments that have less than 3 people in it
 select dept_name,count(*)as total_employee 
 from department inner join employee 
 on employee.dept_id = department.dept_id 
-group by department.dept_name having COUNT(*)<3
+group by department.dept_name having COUNT(*)<4
 
 --3. write a SQL query to find All Department along with the number of people there
 select dept_name,count(*)as total_employee 
@@ -300,7 +302,7 @@ on employee.dept_id = department.dept_id group by department.dept_name
 --be triggered before every Update and Insert command in the Orders controller,and
 --will use the stored procedure to verify that the Freight does not exceed the average
 --freight. If it does, a message will be displayed and the command will be cancelled.
-select * from Customers
+select * from Orders
 create procedure spGetAverageFreight @CustomerId nvarchar(20)
 as 
 begin
@@ -334,17 +336,18 @@ SELECT @result AS Result;
 
 
 
+
 select * from Orders where CustomerID = 'ALFKI'
 insert into orders values ('ALFKI',2,GetDate(),GETDATE(),null,null,4,null,null,null,null,null,null)
 select * from orders where CustomerID='ALFKI'
-update Orders set freight = 28 where orderId =11081
+update Orders set freight = 4 where orderId =11081
 
 
 --2. write a SQL query to Create Stored procedure in the Northwind database to retrieve Employee Sales by Country
 ALTER procedure spEmployeeSalesByCountry @Country varchar(20)
 as
 begin
-	select Employees.FirstName, SUM(UnitPrice*[Order Details].Quantity)  
+	select Employees.FirstName, SUM(UnitPrice*[Order Details].Quantity)  ,Employees.Country
 	from Employees inner join Orders 
 	on Orders.EmployeeID = Employees.EmployeeID 
 	inner join [Order Details] 
@@ -352,6 +355,7 @@ begin
 	group by Employees.FirstName , Employees.Country 
 	having country =@Country
 end
+
 
 --3.write a SQL query to Create Stored procedure in the Northwind database to retrieve Sales by Year
 create procedure spSalesPerYear @Year int
@@ -401,6 +405,7 @@ Begin
 end
 
 exec spInsertOrderDetails 11079,51,12.0,0.15
+select * from [Order Details] where OrderID =11079
 
 --7. write a SQL query to Create Stored procedure in the Northwind database to update Customer Order Details 
 Create procedure spUpdateOrderDetails @OrderId int ,@UnitPrice int, @ProductId int,@Quantity int , @Discount decimal(3,2)
@@ -417,3 +422,133 @@ end
 select * from [Order Details] where OrderID = 11081
 exec spUpdateOrderDetails 11081,45,22,10,0.18
 select * from [Order Details] where OrderID = 11081
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+create table logtable (
+order_no int ,
+[Description] varchar(100),
+[Type] varchar(10))
+select * from tblCustomer
+alter table logtable add customer_id int foreign key references tblCustomer(customer_id)
+
+alter trigger trNewOrder 
+on tblOrder 
+after insert 
+as 
+begin 
+	Declare @orderId int
+	select @orderId = order_no from inserted
+	Declare @customerId int
+	select @customerId = customer_id from inserted
+	Declare @customerName varchar(10)
+	select @customerName = customer_name from tblCustomer where customer_id =@customerId 	
+	insert into logtable values (
+	@orderId,
+	'Ordered by ' +  @customerName +' On '+ CAST(GETDATE() as varchar(25)),
+	'Placed',
+	@customerId
+	)
+end
+select * from logtable
+create trigger trOrderDeleted
+on tblOrder
+after  delete
+as
+Begin
+	Declare @orderId int
+	select @orderId = order_no from deleted
+	Declare @customerId int
+	select @customerId = customer_id from deleted
+	Declare @customerName varchar(10)
+	select @customerName = customer_name from tblCustomer where customer_id =@customerId 	
+	insert into logtable values (
+	@orderId,
+	'Order cancelled by ' +  @customerName +' On '+ CAST(GETDATE() as varchar(25)),
+	'Cancelled',
+	@customerId
+	)
+end
+
+select * from tblOrder,tblSalesman,tblCustomer
+select * from logtable
+delete from tblOrder where tblOrder.order_no = 7
+
+create function fngetTotalOrdersOnTheDate (@Date Date) 
+returns table
+as
+Return 
+select * from tblOrder where order_date = @Date 
+
+print fngetTotalOrdersOnTheDate('2020-03-25')
+
+create function fnGetTotalOrderAmmountOnTheDate (@Date Date)
+returns  int
+as
+Begin
+Declare @ans int
+
+select @ans = sum(purchase_amount) from tblOrder group by order_date having order_date = @Date
+return @ans
+end
+
+DECLARE @result INT		
+set @result = dbo.fnGetTotalOrderAmmountOnTheDate ('2020-03-25')  
+
+PRINT 'Total Order Amount: ' + CAST(@result AS VARCHAR(10))
+
+
+create function fnGetOrdersByCustomer (@customerID int)
+returns table 
+as 
+return 
+select tblOrder.*,tblCustomer.city,tblCustomer.customer_name from tblCustomer inner join tblOrder on tblOrder.customer_id = tblCustomer.customer_id where tblCustomer.customer_id =@customerID
+
+select * from tblOrder
+select  * from fnGetOrdersByCustomer(101)
+
+create view vOrdersByYear 
+as
+select sum(UnitPrice*[Order Details].Quantity) as total_sale,year(Orders.OrderDate)as "year" 
+	from [Order Details] inner join Orders on Orders.OrderID =[Order Details].OrderID 
+	group by YEAR(Orders.OrderDate)
+
+create view vOrdersByCategory
+as
+	select  Categories.CategoryID,sum([Order Details].UnitPrice*[Order Details].Quantity) as  total_sales 
+	from Categories inner join Products 
+	on Products.CategoryID = Categories.CategoryID 
+	inner join  [Order Details] 
+	on [Order Details].ProductID = Products.ProductID 
+	group by Categories.CategoryID 
+
+select * from vOrdersByCategory
+
+create view vTop10MostOderedProducts as
+select top 10 sum(Quantity)as totalOrders,ProductName,Products.UnitPrice  
+from [Order Details] inner join Products on 
+[Order Details].ProductID = Products.ProductID 
+group by Products.ProductID,ProductName,Products.UnitPrice 
+order by totalOrders desc
+
+select * from vTop10MostOderedProducts
+
+create view vSubTotalOfCustomer as
+SELECT	ContactName,Orders.CustomerID, [Order Details].OrderID, SUM(UnitPrice * Quantity) as total FROM [Order Details] inner join Orders on [Order Details].OrderID= Orders.OrderID 
+inner join Customers on Orders.CustomerID = Customers.CustomerID
+GROUP BY [Order Details].OrderID,Orders.CustomerID,Customers.ContactName
+
+select * from vSubTotalOfCustomer
+
+
+create view TotalDiscountOnOrder as
+SELECT	ContactName,Orders.CustomerID, [Order Details].OrderID, SUM(Discount) as totalDiscount FROM [Order Details] inner join Orders on [Order Details].OrderID= Orders.OrderID 
+inner join Customers on Orders.CustomerID = Customers.CustomerID
+GROUP BY [Order Details].OrderID,Orders.CustomerID,Customers.ContactName 
+
+select * from TotalDiscountOnOrder order by totalDiscount desc
