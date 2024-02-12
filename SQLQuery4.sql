@@ -12,7 +12,7 @@ select ProductID,ProductName,UnitPrice from Products where UnitPrice between 15 
 select ProductName,UnitPrice from Products where UnitPrice >(select avg(UnitPrice) from Products)
 
 --4.Write a query to get Product list (name, unit price) of ten most expensive products
-select top 10  ProductName,UnitPrice from Products order by UnitPrice desc
+select top 10  ProductName,UnitPrice from Products order by UnitPrice asc 
 
 --5. Write a query to count current and discontinued products
 select Discontinued, COUNT(Discontinued) as totalAvailable from Products group by Discontinued
@@ -105,24 +105,56 @@ on tblCustomer.salesman_id = tblSalesman.salesman_id
 where commission>0.12 and tblCustomer.city<>tblSalesman.city
 
 --6. write a SQL query to find the details of an order. Return ord_no, ord_date,
---purch_amt, Customer Name, grade, Salesman, commissionselect tblOrder.order_no,tblOrder.order_date,tblOrder.purchase_amount,temptbl.customer_name,temptbl.grade,temptbl.name as salesmanname,temptbl.commissionfrom (select tblCustomer.customer_name,tblCustomer.grade,tblSalesman.name,tblSalesman.commission,tblCustomer.customer_idfrom tblCustomer inner join tblSalesman on tblSalesman.salesman_id = tblCustomer.salesman_id ) as temptbl   inner join tblOrder on temptbl.customer_id = tblOrder.customer_id--7. Write a SQL statement to join the tables salesman, customer and orders so that the
+--purch_amt, Customer Name, grade, Salesman, commission
+
+select tblOrder.order_no,tblOrder.order_date,tblOrder.purchase_amount,tblCustomer.customer_name,tblCustomer.grade,tblSalesman.name,tblSalesman.commission
+from tblOrder inner join 
+tblCustomer on
+tblCustomer.customer_id = tblOrder.customer_id 
+inner join tblSalesman on 
+tblCustomer.salesman_id = tblSalesman.salesman_id
+
+--7. Write a SQL statement to join the tables salesman, customer and orders so that the
 --same column of each table appears once and only the relational rows are returned. 
-select temptbl.customer_id,customer_name,temptbl.city,temptbl.salesman_id,name,commission,order_no,purchase_amount,order_datefrom (select customer_id,customer_name,tblCustomer.city,tblSalesman.salesman_id,name,commissionfrom tblCustomer inner join tblSalesman on tblSalesman.salesman_id = tblCustomer.salesman_id ) as temptbl   inner join tblOrder on temptbl.customer_id = tblOrder.customer_id--8. write a SQL query to display the customer name, customer city, grade, salesman,
---salesman city. The results should be sorted by ascending customer_id.select tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblSalesman.name,tblSalesman.city from tblCustomer inner jointblSalesman ontblCustomer.salesman_id =tblSalesman.salesman_id order by tblCustomer.customer_id--9. write a SQL query to find those customers with a grade less than 300. Return
+select tblCustomer.customer_id,customer_name,tblCustomer.city,tblSalesman.salesman_id,name,commission,order_no,purchase_amount,order_date
+from tblOrder inner join 
+tblCustomer on
+tblCustomer.customer_id = tblOrder.customer_id 
+inner join tblSalesman on 
+tblCustomer.salesman_id = tblSalesman.salesman_id
+
+--8. write a SQL query to display the customer name, customer city, grade, salesman,
+--salesman city. The results should be sorted by ascending customer_id.
+select tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblSalesman.name,tblSalesman.city 
+from tblCustomer inner join
+tblSalesman on
+tblCustomer.salesman_id =tblSalesman.salesman_id order by tblCustomer.customer_id
+
+--9. write a SQL query to find those customers with a grade less than 300. Return
 --cust_name, customer city, grade, Salesman, salesmancity. The result should be
---ordered by ascending customer_id. select tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblSalesman.name,tblSalesman.city from tblCustomer inner jointblSalesman ontblCustomer.salesman_id =tblSalesman.salesman_id where grade<300 order by tblCustomer.customer_id--10. Write a SQL statement to make a report with customer name, city, order number,
+--ordered by ascending customer_id. 
+select tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblSalesman.name,tblSalesman.city 
+from tblCustomer inner join
+tblSalesman on
+tblCustomer.salesman_id =tblSalesman.salesman_id where grade<300 order by tblCustomer.customer_id
+
+--10. Write a SQL statement to make a report with customer name, city, order number,
 --order date, and order amount in ascending order according to the order date to
---determine whether any of the existing customers have placed an order or notselect tblCustomer.customer_name,tblCustomer.city,tblOrder.order_no,tblOrder.order_date,tblOrder.purchase_amount as [order ammount]from tblCustomer left join tblOrder ontblCustomer.customer_id = tblOrder.customer_id order by tblOrder.order_date--11. Write a SQL statement to generate a report with customer name, city, order number,
+--determine whether any of the existing customers have placed an order or not
+select tblCustomer.customer_name,tblCustomer.city,tblOrder.order_no,tblOrder.order_date,tblOrder.purchase_amount as [order ammount]
+from tblCustomer left join 
+tblOrder on
+tblCustomer.customer_id = tblOrder.customer_id order by tblOrder.order_date
+
+--11. Write a SQL statement to generate a report with customer name, city, order number,
 --order date, order amount, salesperson name, and commission to determine if any of
 --the existing customers have not placed orders or if they have placed orders through
 --their salesman or by themselves
-
-select temptbl.customer_name,temptbl.city,temptbl.name,temptbl.commission,tblOrder.order_no,tblOrder.order_date,tblOrder.purchase_amount from  
-(select tblCustomer.customer_id,tblCustomer.customer_name,tblCustomer.city,tblSalesman.name,tblSalesman.commission 
-from tblCustomer 
+select tblCustomer.customer_name,tblCustomer.city,tblOrder.order_no,tblOrder.order_date,tblOrder.purchase_amount,tblSalesman.name,tblSalesman.commission
+from tblCustomer left join tblOrder on 
+tblCustomer.customer_id = tblOrder.customer_id 
 left join tblSalesman on 
-tblCustomer.salesman_id =tblSalesman.salesman_id) as temptbl
-left join tblOrder on temptbl.customer_id = tblOrder.customer_id
+tblSalesman.salesman_id =tblCustomer.salesman_id
 
 --12. Write a SQL statement to generate a list in ascending order of salespersons who
 --work either for one or more customers or have not yet joined any of the customers
@@ -135,31 +167,45 @@ order by tblSalesman.name
 
 --13. write a SQL query to list all salespersons along with customer name, city, grade,
 --order number, date, and amount.
-select tblSalesman.name as salesman_name,temptbl.* from tblSalesman left join 
-(select tblCustomer.salesman_id,tblCustomer.customer_name,tblCustomer.city,tblOrder.order_no,tblOrder.order_date,tblOrder.purchase_amount from tblCustomer inner join tblOrder on tblCustomer.customer_id = tblOrder.customer_id) as temptbl
-on temptbl.salesman_id = tblSalesman.salesman_id
+select tblSalesman.name ,tblCustomer.customer_name,tblCustomer.city,tblCustomer.grade,tblOrder.order_no
+from tblSalesman left join tblCustomer 
+on tblSalesman.salesman_id = tblCustomer.salesman_id 
+left join  tblOrder 
+on tblOrder.customer_id = tblCustomer.customer_id 
+
 
 --14. Write a SQL statement to make a list for the salesmen who either work for one or
 --more customers or yet to join any of the customers. The customer may have placed,
 --either one or more orders on or above order amount 2000 and must have a grade, or
 --he may not have placed any order to the associated supplier
-select tblSalesman.salesman_id,tblSalesman.name as salesman_name,tblSalesman.city,tblSalesman.commission,temptbl.customer_name,temptbl.grade,temptbl.order_date,temptbl.purchase_amount 
-from tblSalesman left join
-(select tblCustomer.customer_name,tblCustomer.grade,tblCustomer.salesman_id,tblOrder.order_date,tblOrder.purchase_amount
-from tblCustomer inner join 
-tblOrder on
-tblOrder.customer_id =tblCustomer.customer_id 
-where purchase_amount>=2000) as temptbl
-on temptbl.salesman_id = tblSalesman.salesman_id
+select tblSalesman.salesman_id,tblSalesman.name as [salesman name],tblSalesman.city,tblSalesman.commission,tblCustomer.customer_name,tblCustomer.grade,tblOrder.order_date,tblOrder.purchase_amount
+from tblSalesman left join tblCustomer 
+on tblSalesman.salesman_id = tblCustomer.salesman_id 
+left join tblOrder on tblCustomer.customer_id = tblOrder.customer_id where tblOrder.purchase_amount>2000
+
+--15. Write a SQL statement to generate a list of all the salesmen who either work for one
+--or more customers or have yet to join any of them. The customer may have placed
+--one or more orders at or above order amount 2000, and must have a grade, or he
+--may not have placed any orders to the associated supplier
+select tblSalesman.salesman_id,tblSalesman.name as [salesman name],tblSalesman.city,tblSalesman.commission,tblCustomer.customer_name,tblCustomer.grade,tblOrder.order_date,tblOrder.purchase_amount
+from tblSalesman left join tblCustomer 
+on tblSalesman.salesman_id = tblCustomer.salesman_id 
+left join tblOrder on tblCustomer.customer_id = tblOrder.customer_id where tblOrder.purchase_amount>2000
+
 
 --16. Write a SQL statement to generate a report with the customer name, city, order no.
 --order date, purchase amount for only those customers on the list who must have a
 --grade and placed one or more orders or which order(s) have been placed by the
 --customer who neither is on the list nor has a grade.
-
+select tblCustomer.customer_name,tblCustomer.city,tblOrder.order_no,tblOrder.order_date,tblOrder.purchase_amount
+from tblOrder left join tblCustomer on tblCustomer.customer_id = tblOrder.customer_id where tblCustomer.grade is not null
 
 --17. Write a SQL query to combine each row of the salesman table with each row of the
---customer tableselect * from tblCustomer cross join tblSalesman --18. Write a SQL statement to create a Cartesian product between salesperson and
+--customer table
+select * from tblCustomer cross join tblSalesman   
+
+
+--18. Write a SQL statement to create a Cartesian product between salesperson and
 --customer, i.e. each salesperson will appear for all customers and vice versa for that
 --salesperson who belongs to that city
 select * from tblCustomer cross join tblSalesman where tblCustomer.city = tblSalesman.city;
@@ -229,7 +275,27 @@ on department.dept_id = employee.dept_id
 group by dept_name
 
 
---2. write a SQL query to find Departments that have less than 3 people in itselect dept_name,count(*)as total_employee from department inner join employee on employee.dept_id = department.dept_id group by department.dept_name having COUNT(*)<3--3. write a SQL query to find All Department along with the number of people thereselect dept_name,count(*)as total_employee from department inner join employee on employee.dept_id = department.dept_id group by department.dept_name--4. write a SQL query to find All Department along with the total salary thereselect department.dept_name,sum(salary) as total_salaryfrom department inner join employee on employee.dept_id = department.dept_id group by department.dept_name--Assignment 4--1. Create a stored procedure in the Northwind database that will calculate the average
+--2. write a SQL query to find Departments that have less than 3 people in it
+select dept_name,count(*)as total_employee 
+from department inner join employee 
+on employee.dept_id = department.dept_id 
+group by department.dept_name having COUNT(*)<3
+
+--3. write a SQL query to find All Department along with the number of people there
+select dept_name,count(*)as total_employee 
+from department inner join employee 
+on employee.dept_id = department.dept_id 
+group by department.dept_name
+
+--4. write a SQL query to find All Department along with the total salary there
+select department.dept_name,sum(salary) as total_salary
+from department inner join employee 
+on employee.dept_id = department.dept_id group by department.dept_name
+
+
+--Assignment 4
+
+--1. Create a stored procedure in the Northwind database that will calculate the average
 --value of Freight for a specified customer.Then, a business rule will be added that will
 --be triggered before every Update and Insert command in the Orders controller,and
 --will use the stored procedure to verify that the Freight does not exceed the average
@@ -274,42 +340,44 @@ select * from orders where CustomerID='ALFKI'
 update Orders set freight = 28 where orderId =11081
 
 
---2. write a SQL query to Create Stored procedure in the Northwind database to retrieve Employee Sales by CountryALTER procedure spEmployeeSalesByCountry @Country varchar(20)asbegin	SELECT Employees.FirstName, SUM(UnitPrice*temptable.Quantity) as totalSales
-	FROM Employees INNER JOIN
-	(select [Order Details].UnitPrice,ShippedDate,Orders.OrderID,Orders.EmployeeID,[Order Details].Quantity
-	from Orders inner join 
-	[Order Details] on 
-	[Order Details].OrderID= Orders.OrderID
-	) AS temptable 
-	on temptable.EmployeeID = Employees.EmployeeID
-	group by Employees.FirstName,Employees.Country
-	having Employees.Country =@Country
+--2. write a SQL query to Create Stored procedure in the Northwind database to retrieve Employee Sales by Country
+ALTER procedure spEmployeeSalesByCountry @Country varchar(20)
+as
+begin
+	select Employees.FirstName, SUM(UnitPrice*[Order Details].Quantity)  
+	from Employees inner join Orders 
+	on Orders.EmployeeID = Employees.EmployeeID 
+	inner join [Order Details] 
+	on Orders.OrderID=[Order Details].OrderID 
+	group by Employees.FirstName , Employees.Country 
+	having country =@Country
 end
-exec spEmployeeSalesByCountry 'USA'
 
 --3.write a SQL query to Create Stored procedure in the Northwind database to retrieve Sales by Year
 create procedure spSalesPerYear @Year int
 as
 Begin
+
 	select sum(UnitPrice*[Order Details].Quantity) as total_sale,year(Orders.OrderDate)as "year" 
 	from [Order Details] inner join Orders on Orders.OrderID =[Order Details].OrderID 
 	group by YEAR(Orders.OrderDate) having YEAR(Orders.OrderDate) =@Year
 end
+	select * from [Order Details]
+	select * from Orders
 exec spSalesPerYear 1998
 
 --4.write a SQL query to Create Stored procedure in the Northwind database to retrieve Sales By Category
 alter procedure spSalesByCategory  @category int
 as
 begin
-	select Categories.CategoryID,sum(temptable.UnitPrice*temptable.Quantity) as  total_sales 
-	from Categories inner join 
-	(select [Order Details].UnitPrice,[Order Details].Quantity,Products.CategoryID 
-	from Products inner join [Order Details] on 
-	Products.ProductID = [Order Details].ProductID 
-	) as temptable
-	on Categories.CategoryID = temptable.CategoryID 
-	group by Categories.CategoryID
-	having Categories.CategoryID =@category
+	
+	
+	select  Categories.CategoryID,sum([Order Details].UnitPrice*[Order Details].Quantity) as  total_sales 
+	from Categories inner join Products 
+	on Products.CategoryID = Categories.CategoryID 
+	inner join  [Order Details] 
+	on [Order Details].ProductID = Products.ProductID 
+	group by Categories.CategoryID having Categories.CategoryID =@category
 end
 	
 exec spSalesByCategory 6
